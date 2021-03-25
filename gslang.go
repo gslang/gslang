@@ -53,7 +53,7 @@ func CountObjects(o Object) (c int) {
 
 // ToString will try to convert object o to string value.
 func ToString(o Object) (v string, ok bool) {
-	if o == UndefinedValue {
+	if o == NilValue {
 		return
 	}
 	ok = true
@@ -213,7 +213,7 @@ func ToInterface(o Object) (res interface{}) {
 		res = o.Value
 	case *Error:
 		res = errors.New(o.String())
-	case *Undefined:
+	case *Nil:
 		res = nil
 	case Object:
 		return o
@@ -225,7 +225,7 @@ func ToInterface(o Object) (res interface{}) {
 func FromInterface(v interface{}) (Object, error) {
 	switch v := v.(type) {
 	case nil:
-		return UndefinedValue, nil
+		return NilValue, nil
 	case string:
 		if len(v) > MaxStringLen {
 			return nil, ErrStringLimit

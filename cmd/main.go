@@ -57,8 +57,7 @@ func main() {
 
 	inputData, err := ioutil.ReadFile(inputFile)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr,
-			"Error reading input file: %s\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr,"Error reading input file: %s\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -175,8 +174,8 @@ func RunREPL(modules *gslang.ModuleMap, in io.Reader, out io.Writer) {
 		Value: func(args ...gslang.Object) (ret gslang.Object, err error) {
 			var printArgs []interface{}
 			for _, arg := range args {
-				if _, isUndefined := arg.(*gslang.Undefined); isUndefined {
-					printArgs = append(printArgs, "<undefined>")
+				if _, isNil := arg.(*gslang.Nil); isNil {
+					printArgs = append(printArgs, "<nil>")
 				} else {
 					s, _ := gslang.ToString(arg)
 					printArgs = append(printArgs, s)

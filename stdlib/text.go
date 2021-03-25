@@ -18,7 +18,7 @@ var textModule = map[string]gslang.Object{
 	"re_find": &gslang.UserFunction{
 		Name:  "re_find",
 		Value: textREFind,
-	}, // re_find(pattern, text, count) => [[{text:,begin:,end:}]]/undefined
+	}, // re_find(pattern, text, count) => [[{text:,begin:,end:}]]/nil
 	"re_replace": &gslang.UserFunction{
 		Name:  "re_replace",
 		Value: textREReplace,
@@ -278,7 +278,7 @@ func textREFind(args ...gslang.Object) (ret gslang.Object, err error) {
 	if numArgs < 3 {
 		m := re.FindStringSubmatchIndex(s2)
 		if m == nil {
-			ret = gslang.UndefinedValue
+			ret = gslang.NilValue
 			return
 		}
 
@@ -308,7 +308,7 @@ func textREFind(args ...gslang.Object) (ret gslang.Object, err error) {
 	}
 	m := re.FindAllStringSubmatchIndex(s2, i3)
 	if m == nil {
-		ret = gslang.UndefinedValue
+		ret = gslang.NilValue
 		return
 	}
 

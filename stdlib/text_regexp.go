@@ -40,8 +40,8 @@ func makeTextRegexp(re *regexp.Regexp) *gslang.Map {
 				},
 			},
 
-			// find(text) 			=> array(array({text:,begin:,end:}))/undefined
-			// find(text, maxCount) => array(array({text:,begin:,end:}))/undefined
+			// find(text) 			=> array(array({text:,begin:,end:}))/nil
+			// find(text, maxCount) => array(array({text:,begin:,end:}))/nil
 			"find": &gslang.UserFunction{
 				Value: func(args ...gslang.Object) (
 					ret gslang.Object,
@@ -66,7 +66,7 @@ func makeTextRegexp(re *regexp.Regexp) *gslang.Map {
 					if numArgs == 1 {
 						m := re.FindStringSubmatchIndex(s1)
 						if m == nil {
-							ret = gslang.UndefinedValue
+							ret = gslang.NilValue
 							return
 						}
 
@@ -103,7 +103,7 @@ func makeTextRegexp(re *regexp.Regexp) *gslang.Map {
 					}
 					m := re.FindAllStringSubmatchIndex(s1, i2)
 					if m == nil {
-						ret = gslang.UndefinedValue
+						ret = gslang.NilValue
 						return
 					}
 

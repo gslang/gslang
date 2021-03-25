@@ -29,7 +29,7 @@ type loop struct {
 
 // CompilerError represents a compiler error.
 type CompilerError struct {
-	FileSet *parser.CodeSet
+	FileSet *parser.FileSet
 	Node    parser.Node
 	Err     error
 }
@@ -46,7 +46,7 @@ type Compiler struct {
 	modulePath      string
 	importDir       string
 	constants       []Object
-	symbol     *Symbol
+	symbol     		*Symbol
 	scopes          []compilationScope
 	scopeIndex      int
 	modules         *ModuleMap
@@ -88,7 +88,7 @@ func NewCompiler(
 
 	return &Compiler{
 		file:            file,
-		symbol:     symbol,
+		symbol:     	 symbol,
 		constants:       constants,
 		scopes:          []compilationScope{mainScope},
 		scopeIndex:      0,
@@ -219,7 +219,7 @@ func (c *Compiler) Compile(node parser.Node) error {
 	case *parser.CharLit:
 		c.emit(node, parser.OpConstant,
 			c.addConstant(&Char{Value: node.Value}))
-	case *parser.UndefinedLit:
+	case *parser.NilLit:
 		c.emit(node, parser.OpNull)
 	case *parser.UnaryExpr:
 		if err := c.Compile(node.Expr); err != nil {
@@ -445,7 +445,7 @@ func (c *Compiler) Compile(node parser.Node) error {
 					// this:
 					//
 					//   func() {
-					//     foo := undefined
+					//     foo := nil
 					//     foo = func(x) {
 					//       // ..
 					//       return foo(x-1)

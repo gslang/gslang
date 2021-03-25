@@ -19,8 +19,8 @@ var (
 	// FalseValue represents a false value.
 	FalseValue Object = &Bool{value: false}
 
-	// UndefinedValue represents an undefined value.
-	UndefinedValue Object = &Undefined{}
+	// NilValue represents an nil value.
+	NilValue Object = &Nil{}
 )
 
 // Object represents an object in the VM.
@@ -54,7 +54,7 @@ type Object interface {
 	// index and return an object. If error is returned, the runtime will treat
 	// it as a run-time error and ignore returned value. If Object is not
 	// indexable, ErrNotIndexable should be returned as error. If nil is
-	// returned as value, it will be converted to UndefinedToken value by the
+	// returned as value, it will be converted to NilToken value by the
 	// runtime.
 	IndexGet(index Object) (value Object, err error)
 
@@ -226,7 +226,7 @@ func (o *Array) IndexGet(index Object) (res Object, err error) {
 	}
 	idxVal := int(intIdx.Value)
 	if idxVal < 0 || idxVal >= len(o.Value) {
-		res = UndefinedValue
+		res = NilValue
 		return
 	}
 	res = o.Value[idxVal]
@@ -432,7 +432,7 @@ func (o *Bytes) IndexGet(index Object) (res Object, err error) {
 	}
 	idxVal := int(intIdx.Value)
 	if idxVal < 0 || idxVal >= len(o.Value) {
-		res = UndefinedValue
+		res = NilValue
 		return
 	}
 	res = &Int{Value: int64(o.Value[idxVal])}
@@ -1053,7 +1053,7 @@ func (o *Map) IndexGet(index Object) (res Object, err error) {
 	}
 	res, ok = o.Value[strIdx]
 	if !ok {
-		res = UndefinedValue
+		res = NilValue
 	}
 	return
 }
@@ -1220,7 +1220,7 @@ func (o *String) IndexGet(index Object) (res Object, err error) {
 		o.runeStr = []rune(o.Value)
 	}
 	if idxVal < 0 || idxVal >= len(o.runeStr) {
-		res = UndefinedValue
+		res = NilValue
 		return
 	}
 	res = &Char{Value: o.runeStr[idxVal]}
@@ -1324,63 +1324,63 @@ func (o *Time) Equals(x Object) bool {
 	return o.Value.Equal(t.Value)
 }
 
-// Undefined represents an undefined value.
-type Undefined struct {
+// Nil represents an nil value.
+type Nil struct {
 	ObjectImpl
 }
 
 // TypeName returns the name of the type.
-func (o *Undefined) TypeName() string {
-	return "undefined"
+func (o *Nil) TypeName() string {
+	return "nil"
 }
 
-func (o *Undefined) String() string {
-	return "<undefined>"
+func (o *Nil) String() string {
+	return "<nil>"
 }
 
 // Copy returns a copy of the type.
-func (o *Undefined) Copy() Object {
+func (o *Nil) Copy() Object {
 	return o
 }
 
 // IsFalsy returns true if the value of the type is falsy.
-func (o *Undefined) IsFalsy() bool {
+func (o *Nil) IsFalsy() bool {
 	return true
 }
 
 // Equals returns true if the value of the type is equal to the value of
 // another object.
-func (o *Undefined) Equals(x Object) bool {
+func (o *Nil) Equals(x Object) bool {
 	return o == x
 }
 
 // IndexGet returns an element at a given index.
-func (o *Undefined) IndexGet(_ Object) (Object, error) {
-	return UndefinedValue, nil
+func (o *Nil) IndexGet(_ Object) (Object, error) {
+	return NilValue, nil
 }
 
 // Iterate creates a map iterator.
-func (o *Undefined) Iterate() Iterator {
+func (o *Nil) Iterate() Iterator {
 	return o
 }
 
 // CanIterate returns whether the Object can be Iterated.
-func (o *Undefined) CanIterate() bool {
+func (o *Nil) CanIterate() bool {
 	return true
 }
 
 // Next returns true if there are more elements to iterate.
-func (o *Undefined) Next() bool {
+func (o *Nil) Next() bool {
 	return false
 }
 
 // Key returns the key or index value of the current element.
-func (o *Undefined) Key() Object {
+func (o *Nil) Key() Object {
 	return o
 }
 
 // Value returns the value of the current element.
-func (o *Undefined) Value() Object {
+func (o *Nil) Value() Object {
 	return o
 }
 

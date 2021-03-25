@@ -216,7 +216,7 @@ func Encode(o gslang.Object) ([]byte, error) {
 			return nil, err
 		}
 		b = append(b, y...)
-	case *gslang.Undefined:
+	case *gslang.Nil:
 		b = append(b, "null"...)
 	default:
 		// unknown type: ignore

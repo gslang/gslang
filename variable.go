@@ -130,7 +130,7 @@ func (v *Variable) Object() Object {
 	return v.value
 }
 
-// IsUndefined returns true if the underlying value is undefined.
-func (v *Variable) IsUndefined() bool {
-	return v.value == UndefinedValue
+// IsNil returns true if the underlying value is nil.
+func (v *Variable) IsNil() bool {
+	return v.value == NilValue
 }

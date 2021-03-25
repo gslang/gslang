@@ -94,10 +94,6 @@ var builtinFuncs = []*BuiltinFunction{
 		Value: builtinIsError,
 	},
 	{
-		Name:  "is_undefined",
-		Value: builtinIsUndefined,
-	},
-	{
 		Name:  "is_function",
 		Value: builtinIsFunction,
 	},
@@ -106,8 +102,16 @@ var builtinFuncs = []*BuiltinFunction{
 		Value: builtinIsCallable,
 	},
 	{
-		Name:  "type_name",
-		Value: builtinTypeName,
+		Name:  "is_nil",
+		Value: builtinIsNil,
+	},
+	{
+		Name:  "type",
+		Value: builtinType,
+	},
+	{
+		Name:  "range",
+		Value: builtinRange,
 	},
 	{
 		Name:  "format",
@@ -120,7 +124,7 @@ func GetAllBuiltinFunctions() []*BuiltinFunction {
 	return append([]*BuiltinFunction{}, builtinFuncs...)
 }
 
-func builtinTypeName(args ...Object) (Object, error) {
+func builtinType(args ...Object) (Object, error) {
 	if len(args) != 1 {
 		return nil, ErrWrongNumArguments
 	}
@@ -227,11 +231,11 @@ func builtinIsError(args ...Object) (Object, error) {
 	return FalseValue, nil
 }
 
-func builtinIsUndefined(args ...Object) (Object, error) {
+func builtinIsNil(args ...Object) (Object, error) {
 	if len(args) != 1 {
 		return nil, ErrWrongNumArguments
 	}
-	if args[0] == UndefinedValue {
+	if args[0] == NilValue {
 		return TrueValue, nil
 	}
 	return FalseValue, nil
@@ -291,6 +295,71 @@ func builtinLen(args ...Object) (Object, error) {
 	}
 }
 
+//range(start, stop[, step])
+func builtinRange(args ...Object) (Object, error) {
+	numArgs := len(args)
+	if numArgs < 2 || numArgs > 3 {
+		return nil, ErrWrongNumArguments
+	}
+	var start, stop, step *Int
+
+	for i, arg := range args {
+		v, ok := args[i].(*Int)
+		if !ok {
+			var name string
+			switch i {
+			case 0:
+				name = "start"
+			case 1:
+				name = "stop"
+			case 2:
+				name = "step"
+			}
+
+			return nil, ErrInvalidArgumentType{
+				Name:     name,
+				Expected: "int",
+				Found:    arg.TypeName(),
+			}
+		}
+		if i == 2 && v.Value <= 0 {
+			return nil, ErrInvalidRangeStep
+		}
+		switch i {
+		case 0:
+			start = v
+		case 1:
+			stop = v
+		case 2:
+			step = v
+		}
+	}
+
+	if step == nil {
+		step = &Int{Value: int64(1)}
+	}
+
+	return buildRange(start.Value, stop.Value, step.Value), nil
+}
+
+func buildRange(start, stop, step int64) *Array {
+	array := &Array{}
+	if start <= stop {
+		for i := start; i < stop; i += step {
+			array.Value = append(array.Value, &Int{
+				Value: i,
+			})
+		}
+	} else {
+		for i := start; i > stop; i -= step {
+			array.Value = append(array.Value, &Int{
+				Value: i,
+			})
+		}
+	}
+	return array
+}
+
 func builtinFormat(args ...Object) (Object, error) {
 	numArgs := len(args)
 	if numArgs == 0 {
@@ -336,7 +405,7 @@ func builtinString(args ...Object) (Object, error) {
 	if argsLen == 2 {
 		return args[1], nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 func builtinInt(args ...Object) (Object, error) {
@@ -354,7 +423,7 @@ func builtinInt(args ...Object) (Object, error) {
 	if argsLen == 2 {
 		return args[1], nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 func builtinFloat(args ...Object) (Object, error) {
@@ -372,7 +441,7 @@ func builtinFloat(args ...Object) (Object, error) {
 	if argsLen == 2 {
 		return args[1], nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 func builtinBool(args ...Object) (Object, error) {
@@ -389,7 +458,7 @@ func builtinBool(args ...Object) (Object, error) {
 		}
 		return FalseValue, nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 func builtinChar(args ...Object) (Object, error) {
@@ -407,7 +476,7 @@ func builtinChar(args ...Object) (Object, error) {
 	if argsLen == 2 {
 		return args[1], nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 func builtinBytes(args ...Object) (Object, error) {
@@ -433,7 +502,7 @@ func builtinBytes(args ...Object) (Object, error) {
 	if argsLen == 2 {
 		return args[1], nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 func builtinTime(args ...Object) (Object, error) {
@@ -451,7 +520,7 @@ func builtinTime(args ...Object) (Object, error) {
 	if argsLen == 2 {
 		return args[1], nil
 	}
-	return UndefinedValue, nil
+	return NilValue, nil
 }
 
 // append(arr, items...)
@@ -483,7 +552,7 @@ func builtinDelete(args ...Object) (Object, error) {
 	case *Map:
 		if key, ok := args[1].(*String); ok {
 			delete(arg.Value, key.Value)
-			return UndefinedValue, nil
+			return NilValue, nil
 		}
 		return nil, ErrInvalidArgumentType{
 			Name:     "second",

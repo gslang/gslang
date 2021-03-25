@@ -191,7 +191,7 @@ func (d *decodeState) literal() (gslang.Object, error) {
 
 	switch c := item[0]; c {
 	case 'n': // null
-		return gslang.UndefinedValue, nil
+		return gslang.NilValue, nil
 
 	case 't', 'f': // true, false
 		if c == 't' {

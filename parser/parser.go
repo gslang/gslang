@@ -44,7 +44,7 @@ func NewParser(file *Code, src []byte, trace io.Writer) *Parser {
 		traceOut: trace,
 	}
 	p.scanner = NewScanner(p.file, src,
-		func(pos CodePos, msg string) {
+		func(pos FilePos, msg string) {
 			p.errors.Add(pos, msg)
 		}, 0)
 	p.next()
@@ -349,8 +349,8 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
-	case token.Undefined:
-		x := &UndefinedLit{TokenPos: p.pos}
+	case token.Nil:
+		x := &NilLit{TokenPos: p.pos}
 		p.next()
 		return x
 	case token.Import:
@@ -583,7 +583,7 @@ func (p *Parser) parseStmt() (stmt Stmt) {
 	case // simple statements
 		token.Func, token.Error, token.Ident, token.Int,
 		token.Float, token.Char, token.String, token.True, token.False,
-		token.Undefined, token.Import, token.LParen, token.LBrace,
+		token.Nil, token.Import, token.LParen, token.LBrace,
 		token.LBrack, token.Add, token.Sub, token.Mul, token.And, token.Xor,
 		token.Not:
 		s := p.parseSimpleStmt(false)

@@ -9,7 +9,7 @@ var BuiltinModules = map[string]map[string]gslang.Object{
 	"math":   mathModule,
 	"os":     osModule,
 	"text":   textModule,
-	"times":  timesModule,
+	"time":   timeModule,
 	"rand":   randModule,
 	"fmt":    fmtModule,
 	"json":   jsonModule,

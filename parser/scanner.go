@@ -20,7 +20,7 @@ const (
 )
 
 // ScannerErrorHandler is an error handler for the scanner.
-type ScannerErrorHandler func(pos CodePos, msg string)
+type ScannerErrorHandler func(pos FilePos, msg string)
 
 // Scanner reads the gslang source text. It's based on Go's scanner
 // implementation.
@@ -89,7 +89,7 @@ func (s *Scanner) Scan() (
 		tok = token.Lookup(literal)
 		switch tok {
 		case token.Ident, token.Break, token.Continue, token.Return,
-			token.Export, token.True, token.False, token.Undefined:
+			token.Export, token.True, token.False, token.Nil:
 			insertSemi = true
 		}
 	case '0' <= ch && ch <= '9':

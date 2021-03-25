@@ -6,7 +6,7 @@ import (
 	"github.com/gslang/gslang"
 )
 
-var timesModule = map[string]gslang.Object{
+var timeModule = map[string]gslang.Object{
 	"format_ansic":        &gslang.String{Value: time.ANSIC},
 	"format_unix_date":    &gslang.String{Value: time.UnixDate},
 	"format_ruby_date":    &gslang.String{Value: time.RubyDate},
@@ -42,147 +42,147 @@ var timesModule = map[string]gslang.Object{
 	"december":            &gslang.Int{Value: int64(time.December)},
 	"sleep": &gslang.UserFunction{
 		Name:  "sleep",
-		Value: timesSleep,
+		Value: timeSleep,
 	}, // sleep(int)
 	"parse_duration": &gslang.UserFunction{
 		Name:  "parse_duration",
-		Value: timesParseDuration,
+		Value: timeParseDuration,
 	}, // parse_duration(str) => int
 	"since": &gslang.UserFunction{
 		Name:  "since",
-		Value: timesSince,
+		Value: timeSince,
 	}, // since(time) => int
 	"until": &gslang.UserFunction{
 		Name:  "until",
-		Value: timesUntil,
+		Value: timeUntil,
 	}, // until(time) => int
 	"duration_hours": &gslang.UserFunction{
 		Name:  "duration_hours",
-		Value: timesDurationHours,
+		Value: timeDurationHours,
 	}, // duration_hours(int) => float
 	"duration_minutes": &gslang.UserFunction{
 		Name:  "duration_minutes",
-		Value: timesDurationMinutes,
+		Value: timeDurationMinutes,
 	}, // duration_minutes(int) => float
 	"duration_nanoseconds": &gslang.UserFunction{
 		Name:  "duration_nanoseconds",
-		Value: timesDurationNanoseconds,
+		Value: timeDurationNanoseconds,
 	}, // duration_nanoseconds(int) => int
 	"duration_seconds": &gslang.UserFunction{
 		Name:  "duration_seconds",
-		Value: timesDurationSeconds,
+		Value: timeDurationSeconds,
 	}, // duration_seconds(int) => float
 	"duration_string": &gslang.UserFunction{
 		Name:  "duration_string",
-		Value: timesDurationString,
+		Value: timeDurationString,
 	}, // duration_string(int) => string
 	"month_string": &gslang.UserFunction{
 		Name:  "month_string",
-		Value: timesMonthString,
+		Value: timeMonthString,
 	}, // month_string(int) => string
 	"date": &gslang.UserFunction{
 		Name:  "date",
-		Value: timesDate,
+		Value: timeDate,
 	}, // date(year, month, day, hour, min, sec, nsec) => time
 	"now": &gslang.UserFunction{
 		Name:  "now",
-		Value: timesNow,
+		Value: timeNow,
 	}, // now() => time
 	"parse": &gslang.UserFunction{
 		Name:  "parse",
-		Value: timesParse,
+		Value: timeParse,
 	}, // parse(format, str) => time
 	"unix": &gslang.UserFunction{
 		Name:  "unix",
-		Value: timesUnix,
+		Value: timeUnix,
 	}, // unix(sec, nsec) => time
 	"add": &gslang.UserFunction{
 		Name:  "add",
-		Value: timesAdd,
+		Value: timeAdd,
 	}, // add(time, int) => time
 	"add_date": &gslang.UserFunction{
 		Name:  "add_date",
-		Value: timesAddDate,
+		Value: timeAddDate,
 	}, // add_date(time, years, months, days) => time
 	"sub": &gslang.UserFunction{
 		Name:  "sub",
-		Value: timesSub,
+		Value: timeSub,
 	}, // sub(t time, u time) => int
 	"after": &gslang.UserFunction{
 		Name:  "after",
-		Value: timesAfter,
+		Value: timeAfter,
 	}, // after(t time, u time) => bool
 	"before": &gslang.UserFunction{
 		Name:  "before",
-		Value: timesBefore,
+		Value: timeBefore,
 	}, // before(t time, u time) => bool
 	"time_year": &gslang.UserFunction{
 		Name:  "time_year",
-		Value: timesTimeYear,
+		Value: timeTimeYear,
 	}, // time_year(time) => int
 	"time_month": &gslang.UserFunction{
 		Name:  "time_month",
-		Value: timesTimeMonth,
+		Value: timeTimeMonth,
 	}, // time_month(time) => int
 	"time_day": &gslang.UserFunction{
 		Name:  "time_day",
-		Value: timesTimeDay,
+		Value: timeTimeDay,
 	}, // time_day(time) => int
 	"time_weekday": &gslang.UserFunction{
 		Name:  "time_weekday",
-		Value: timesTimeWeekday,
+		Value: timeTimeWeekday,
 	}, // time_weekday(time) => int
 	"time_hour": &gslang.UserFunction{
 		Name:  "time_hour",
-		Value: timesTimeHour,
+		Value: timeTimeHour,
 	}, // time_hour(time) => int
 	"time_minute": &gslang.UserFunction{
 		Name:  "time_minute",
-		Value: timesTimeMinute,
+		Value: timeTimeMinute,
 	}, // time_minute(time) => int
 	"time_second": &gslang.UserFunction{
 		Name:  "time_second",
-		Value: timesTimeSecond,
+		Value: timeTimeSecond,
 	}, // time_second(time) => int
 	"time_nanosecond": &gslang.UserFunction{
 		Name:  "time_nanosecond",
-		Value: timesTimeNanosecond,
+		Value: timeTimeNanosecond,
 	}, // time_nanosecond(time) => int
 	"time_unix": &gslang.UserFunction{
 		Name:  "time_unix",
-		Value: timesTimeUnix,
+		Value: timeTimeUnix,
 	}, // time_unix(time) => int
 	"time_unix_nano": &gslang.UserFunction{
 		Name:  "time_unix_nano",
-		Value: timesTimeUnixNano,
+		Value: timeTimeUnixNano,
 	}, // time_unix_nano(time) => int
 	"time_format": &gslang.UserFunction{
 		Name:  "time_format",
-		Value: timesTimeFormat,
+		Value: timeTimeFormat,
 	}, // time_format(time, format) => string
 	"time_location": &gslang.UserFunction{
 		Name:  "time_location",
-		Value: timesTimeLocation,
+		Value: timeTimeLocation,
 	}, // time_location(time) => string
 	"time_string": &gslang.UserFunction{
 		Name:  "time_string",
-		Value: timesTimeString,
+		Value: timeTimeString,
 	}, // time_string(time) => string
 	"is_zero": &gslang.UserFunction{
 		Name:  "is_zero",
-		Value: timesIsZero,
+		Value: timeIsZero,
 	}, // is_zero(time) => bool
 	"to_local": &gslang.UserFunction{
 		Name:  "to_local",
-		Value: timesToLocal,
+		Value: timeToLocal,
 	}, // to_local(time) => time
 	"to_utc": &gslang.UserFunction{
 		Name:  "to_utc",
-		Value: timesToUTC,
+		Value: timeToUTC,
 	}, // to_utc(time) => time
 }
 
-func timesSleep(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeSleep(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -199,12 +199,12 @@ func timesSleep(args ...gslang.Object) (ret gslang.Object, err error) {
 	}
 
 	time.Sleep(time.Duration(i1))
-	ret = gslang.UndefinedValue
+	ret = gslang.NilValue
 
 	return
 }
 
-func timesParseDuration(args ...gslang.Object) (
+func timeParseDuration(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -234,7 +234,7 @@ func timesParseDuration(args ...gslang.Object) (
 	return
 }
 
-func timesSince(args ...gslang.Object) (
+func timeSince(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -258,7 +258,7 @@ func timesSince(args ...gslang.Object) (
 	return
 }
 
-func timesUntil(args ...gslang.Object) (
+func timeUntil(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -282,7 +282,7 @@ func timesUntil(args ...gslang.Object) (
 	return
 }
 
-func timesDurationHours(args ...gslang.Object) (
+func timeDurationHours(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -306,7 +306,7 @@ func timesDurationHours(args ...gslang.Object) (
 	return
 }
 
-func timesDurationMinutes(args ...gslang.Object) (
+func timeDurationMinutes(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -330,7 +330,7 @@ func timesDurationMinutes(args ...gslang.Object) (
 	return
 }
 
-func timesDurationNanoseconds(args ...gslang.Object) (
+func timeDurationNanoseconds(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -354,7 +354,7 @@ func timesDurationNanoseconds(args ...gslang.Object) (
 	return
 }
 
-func timesDurationSeconds(args ...gslang.Object) (
+func timeDurationSeconds(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -378,7 +378,7 @@ func timesDurationSeconds(args ...gslang.Object) (
 	return
 }
 
-func timesDurationString(args ...gslang.Object) (
+func timeDurationString(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -402,7 +402,7 @@ func timesDurationString(args ...gslang.Object) (
 	return
 }
 
-func timesMonthString(args ...gslang.Object) (
+func timeMonthString(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -426,7 +426,7 @@ func timesMonthString(args ...gslang.Object) (
 	return
 }
 
-func timesDate(args ...gslang.Object) (
+func timeDate(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -507,7 +507,7 @@ func timesDate(args ...gslang.Object) (
 	return
 }
 
-func timesNow(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeNow(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 0 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -518,7 +518,7 @@ func timesNow(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesParse(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeParse(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -555,7 +555,7 @@ func timesParse(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesUnix(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeUnix(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -586,7 +586,7 @@ func timesUnix(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesAdd(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeAdd(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -617,7 +617,7 @@ func timesAdd(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesSub(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeSub(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -648,7 +648,7 @@ func timesSub(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesAddDate(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeAddDate(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 4 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -699,7 +699,7 @@ func timesAddDate(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesAfter(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeAfter(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -734,7 +734,7 @@ func timesAfter(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesBefore(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeBefore(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -769,7 +769,7 @@ func timesBefore(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeYear(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeYear(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -790,7 +790,7 @@ func timesTimeYear(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeMonth(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeMonth(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -811,7 +811,7 @@ func timesTimeMonth(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeDay(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeDay(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -832,7 +832,7 @@ func timesTimeDay(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeWeekday(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeWeekday(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -853,7 +853,7 @@ func timesTimeWeekday(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeHour(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeHour(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -874,7 +874,7 @@ func timesTimeHour(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeMinute(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeMinute(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -895,7 +895,7 @@ func timesTimeMinute(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeSecond(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeSecond(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -916,7 +916,7 @@ func timesTimeSecond(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeNanosecond(args ...gslang.Object) (
+func timeTimeNanosecond(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -940,7 +940,7 @@ func timesTimeNanosecond(args ...gslang.Object) (
 	return
 }
 
-func timesTimeUnix(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeUnix(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -961,7 +961,7 @@ func timesTimeUnix(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeUnixNano(args ...gslang.Object) (
+func timeTimeUnixNano(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -985,7 +985,7 @@ func timesTimeUnixNano(args ...gslang.Object) (
 	return
 }
 
-func timesTimeFormat(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeFormat(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 2 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -1022,7 +1022,7 @@ func timesTimeFormat(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesIsZero(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeIsZero(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -1047,7 +1047,7 @@ func timesIsZero(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesToLocal(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeToLocal(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -1068,7 +1068,7 @@ func timesToLocal(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesToUTC(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeToUTC(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return
@@ -1089,7 +1089,7 @@ func timesToUTC(args ...gslang.Object) (ret gslang.Object, err error) {
 	return
 }
 
-func timesTimeLocation(args ...gslang.Object) (
+func timeTimeLocation(args ...gslang.Object) (
 	ret gslang.Object,
 	err error,
 ) {
@@ -1113,7 +1113,7 @@ func timesTimeLocation(args ...gslang.Object) (
 	return
 }
 
-func timesTimeString(args ...gslang.Object) (ret gslang.Object, err error) {
+func timeTimeString(args ...gslang.Object) (ret gslang.Object, err error) {
 	if len(args) != 1 {
 		err = gslang.ErrWrongNumArguments
 		return

@@ -13,7 +13,7 @@ func FuncAR(fn func()) gslang.CallableFunc {
 			return nil, gslang.ErrWrongNumArguments
 		}
 		fn()
-		return gslang.UndefinedValue, nil
+		return gslang.NilValue, nil
 	}
 }
 
@@ -76,7 +76,7 @@ func FuncAI64R(fn func(int64)) gslang.CallableFunc {
 			}
 		}
 		fn(i1)
-		return gslang.UndefinedValue, nil
+		return gslang.NilValue, nil
 	}
 }
 
@@ -262,7 +262,7 @@ func FuncAIR(fn func(int)) gslang.CallableFunc {
 			}
 		}
 		fn(i1)
-		return gslang.UndefinedValue, nil
+		return gslang.NilValue, nil
 	}
 }
 

@@ -7,7 +7,7 @@ import (
 
 // Error represents a parser error.
 type Error struct {
-	Pos CodePos
+	Pos FilePos
 	Msg string
 }
 
@@ -22,7 +22,7 @@ func (e Error) Error() string {
 type ErrorList []*Error
 
 // Add adds a new parser error to the collection.
-func (p *ErrorList) Add(pos CodePos, msg string) {
+func (p *ErrorList) Add(pos FilePos, msg string) {
 	*p = append(*p, &Error{pos, msg})
 }
 

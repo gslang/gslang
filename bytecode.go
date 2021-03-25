@@ -11,7 +11,7 @@ import (
 
 // Bytecode is a compiled instructions and constants.
 type Bytecode struct {
-	FileSet      *parser.CodeSet
+	FileSet      *parser.FileSet
 	MainFunction *CompiledFunction
 	Constants    []Object
 }
@@ -193,8 +193,8 @@ func fixDecodedObject(
 			return FalseValue, nil
 		}
 		return TrueValue, nil
-	case *Undefined:
-		return UndefinedValue, nil
+	case *Nil:
+		return NilValue, nil
 	case *Array:
 		for i, v := range o.Value {
 			fv, err := fixDecodedObject(v, modules)
@@ -256,7 +256,7 @@ func inferModuleName(mod *Map) string {
 }
 
 func init() {
-	gob.Register(&parser.CodeSet{})
+	gob.Register(&parser.FileSet{})
 	gob.Register(&parser.Code{})
 	gob.Register(&Array{})
 	gob.Register(&Bool{})
@@ -269,6 +269,6 @@ func init() {
 	gob.Register(&Map{})
 	gob.Register(&String{})
 	gob.Register(&Time{})
-	gob.Register(&Undefined{})
+	gob.Register(&Nil{})
 	gob.Register(&UserFunction{})
 }

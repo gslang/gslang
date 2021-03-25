@@ -50,7 +50,7 @@ func makeOSExecCommand(cmd *exec.Cmd) *gslang.Map {
 						}
 					}
 					cmd.Path = s1
-					return gslang.UndefinedValue, nil
+					return gslang.NilValue, nil
 				},
 			},
 			// set_dir(dir string)
@@ -69,7 +69,7 @@ func makeOSExecCommand(cmd *exec.Cmd) *gslang.Map {
 						}
 					}
 					cmd.Dir = s1
-					return gslang.UndefinedValue, nil
+					return gslang.NilValue, nil
 				},
 			},
 			// set_env(env array(string))
@@ -96,7 +96,7 @@ func makeOSExecCommand(cmd *exec.Cmd) *gslang.Map {
 						}
 					}
 					cmd.Env = env
-					return gslang.UndefinedValue, nil
+					return gslang.NilValue, nil
 				},
 			},
 			// process() => imap(process)

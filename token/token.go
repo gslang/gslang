@@ -81,7 +81,7 @@ const (
 	True
 	False
 	In
-	Undefined
+	Nil
 	Import
 	_keywordEnd
 )
@@ -154,7 +154,7 @@ var tokens = [...]string{
 	True:         "true",
 	False:        "false",
 	In:           "in",
-	Undefined:    "undefined",
+	Nil:    "nil",
 	Import:       "import",
 }
 

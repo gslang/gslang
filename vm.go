@@ -22,7 +22,7 @@ type VM struct {
 	stack       [StackSize]Object
 	sp          int
 	globals     []Object
-	fileSet     *parser.CodeSet
+	fileSet     *parser.FileSet
 	frames      [MaxFrames]frame
 	framesIndex int
 	curFrame    *frame
@@ -106,7 +106,7 @@ func (v *VM) run() {
 			v.stack[v.sp] = v.constants[cidx]
 			v.sp++
 		case parser.OpNull:
-			v.stack[v.sp] = UndefinedValue
+			v.stack[v.sp] = NilValue
 			v.sp++
 		case parser.OpBinaryOp:
 			v.ip++
@@ -340,7 +340,7 @@ func (v *VM) run() {
 				return
 			}
 			if val == nil {
-				val = UndefinedValue
+				val = NilValue
 			}
 			v.stack[v.sp] = val
 			v.sp++
@@ -351,7 +351,7 @@ func (v *VM) run() {
 			v.sp -= 3
 
 			var lowIdx int64
-			if low != UndefinedValue {
+			if low != NilValue {
 				if low, ok := low.(*Int); ok {
 					lowIdx = low.Value
 				} else {
@@ -365,7 +365,7 @@ func (v *VM) run() {
 			case *Array:
 				numElements := int64(len(left.Value))
 				var highIdx int64
-				if high == UndefinedValue {
+				if high == NilValue {
 					highIdx = numElements
 				} else if high, ok := high.(*Int); ok {
 					highIdx = high.Value
@@ -402,7 +402,7 @@ func (v *VM) run() {
 			case *String:
 				numElements := int64(len(left.Value))
 				var highIdx int64
-				if high == UndefinedValue {
+				if high == NilValue {
 					highIdx = numElements
 				} else if high, ok := high.(*Int); ok {
 					highIdx = high.Value
@@ -439,7 +439,7 @@ func (v *VM) run() {
 			case *Bytes:
 				numElements := int64(len(left.Value))
 				var highIdx int64
-				if high == UndefinedValue {
+				if high == NilValue {
 					highIdx = numElements
 				} else if high, ok := high.(*Int); ok {
 					highIdx = high.Value
@@ -585,9 +585,9 @@ func (v *VM) run() {
 					return
 				}
 
-				// nil return -> undefined
+				// nil return -> nil
 				if ret == nil {
-					ret = UndefinedValue
+					ret = NilValue
 				}
 				v.allocs--
 				if v.allocs == 0 {
@@ -603,7 +603,7 @@ func (v *VM) run() {
 			if int(v.curInsts[v.ip]) == 1 {
 				retVal = v.stack[v.sp-1]
 			} else {
-				retVal = UndefinedValue
+				retVal = NilValue
 			}
 			//v.sp--
 			v.framesIndex--
