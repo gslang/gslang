@@ -4,19 +4,17 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-
-	"github.com/gslang/gslang/token"
 )
 
 type bailout struct{}
 
-var stmtStart = map[token.Token]bool{
-	token.Break:    true,
-	token.Continue: true,
-	token.For:      true,
-	token.If:       true,
-	token.Return:   true,
-	token.Export:   true,
+var stmtStart = map[Token]bool{
+	TokenBreak:    true,
+	TokenContinue: true,
+	TokenFor:      true,
+	TokenIf:       true,
+	TokenReturn:   true,
+	TokenExport:   true,
 }
 
 // Parser parses the gslang source files. It's based on Go's parser
@@ -26,7 +24,7 @@ type Parser struct {
 	errors    ErrorList
 	scanner   *Scanner
 	pos       Pos
-	token     token.Token
+	token     Token
 	tokenLit  string
 	exprLevel int // < 0: in control clause, >= 0: in expression
 	syncPos   Pos // last sync position
@@ -89,10 +87,10 @@ func (p *Parser) parseExpr() Expr {
 		defer untracep(tracep(p, "Expression"))
 	}
 
-	expr := p.parseBinaryExpr(token.LowestPrec + 1)
+	expr := p.parseBinaryExpr(LowestPrec + 1)
 
 	// ternary conditional expression
-	if p.token == token.Question {
+	if p.token == TokenQuestion {
 		return p.parseCondExpr(expr)
 	}
 	return expr
@@ -125,9 +123,9 @@ func (p *Parser) parseBinaryExpr(prec1 int) Expr {
 }
 
 func (p *Parser) parseCondExpr(cond Expr) Expr {
-	questionPos := p.expect(token.Question)
+	questionPos := p.expect(TokenQuestion)
 	trueExpr := p.parseExpr()
-	colonPos := p.expect(token.Colon)
+	colonPos := p.expect(TokenColon)
 	falseExpr := p.parseExpr()
 
 	return &CondExpr{
@@ -145,7 +143,7 @@ func (p *Parser) parseUnaryExpr() Expr {
 	}
 
 	switch p.token {
-	case token.Add, token.Sub, token.Not, token.Xor:
+	case TokenAdd, TokenSub, TokenNot, TokenXor:
 		pos, op := p.pos, p.token
 		p.next()
 		x := p.parseUnaryExpr()
@@ -168,11 +166,11 @@ func (p *Parser) parsePrimaryExpr() Expr {
 L:
 	for {
 		switch p.token {
-		case token.Period:
+		case TokenPeriod:
 			p.next()
 
 			switch p.token {
-			case token.Ident:
+			case TokenIdent:
 				x = p.parseSelector(x)
 			default:
 				pos := p.pos
@@ -180,9 +178,9 @@ L:
 				p.advance(stmtStart)
 				return &BadExpr{From: pos, To: p.pos}
 			}
-		case token.LBrack:
+		case TokenLBrack:
 			x = p.parseIndexOrSlice(x)
-		case token.LParen:
+		case TokenLParen:
 			x = p.parseCall(x)
 		default:
 			break L
@@ -196,24 +194,24 @@ func (p *Parser) parseCall(x Expr) *CallExpr {
 		defer untracep(tracep(p, "Call"))
 	}
 
-	lparen := p.expect(token.LParen)
+	lparen := p.expect(TokenLParen)
 	p.exprLevel++
 
 	var list []Expr
 	var ellipsis Pos
-	for p.token != token.RParen && p.token != token.EOF && !ellipsis.IsValid() {
+	for p.token != TokenRParen && p.token != TokenEOF && !ellipsis.IsValid() {
 		list = append(list, p.parseExpr())
-		if p.token == token.Ellipsis {
+		if p.token == TokenEllipsis {
 			ellipsis = p.pos
 			p.next()
 		}
-		if !p.expectComma(token.RParen, "call argument") {
+		if !p.expectComma(TokenRParen, "call argument") {
 			break
 		}
 	}
 
 	p.exprLevel--
-	rparen := p.expect(token.RParen)
+	rparen := p.expect(TokenRParen)
 	return &CallExpr{
 		Func:     x,
 		LParen:   lparen,
@@ -223,8 +221,8 @@ func (p *Parser) parseCall(x Expr) *CallExpr {
 	}
 }
 
-func (p *Parser) expectComma(closing token.Token, want string) bool {
-	if p.token == token.Comma {
+func (p *Parser) expectComma(closing Token, want string) bool {
+	if p.token == TokenComma {
 		p.next()
 
 		if p.token == closing {
@@ -234,7 +232,7 @@ func (p *Parser) expectComma(closing token.Token, want string) bool {
 		return true
 	}
 
-	if p.token == token.Semicolon && p.tokenLit == "\n" {
+	if p.token == TokenSemicolon && p.tokenLit == "\n" {
 		p.next()
 	}
 	return false
@@ -245,25 +243,25 @@ func (p *Parser) parseIndexOrSlice(x Expr) Expr {
 		defer untracep(tracep(p, "IndexOrSlice"))
 	}
 
-	lbrack := p.expect(token.LBrack)
+	lbrack := p.expect(TokenLBrack)
 	p.exprLevel++
 
 	var index [2]Expr
-	if p.token != token.Colon {
+	if p.token != TokenColon {
 		index[0] = p.parseExpr()
 	}
 	numColons := 0
-	if p.token == token.Colon {
+	if p.token == TokenColon {
 		numColons++
 		p.next()
 
-		if p.token != token.RBrack && p.token != token.EOF {
+		if p.token != TokenRBrack && p.token != TokenEOF {
 			index[1] = p.parseExpr()
 		}
 	}
 
 	p.exprLevel--
-	rbrack := p.expect(token.RBrack)
+	rbrack := p.expect(TokenRBrack)
 
 	if numColons > 0 {
 		// slice expression
@@ -302,9 +300,9 @@ func (p *Parser) parseOperand() Expr {
 	}
 
 	switch p.token {
-	case token.Ident:
+	case TokenIdent:
 		return p.parseIdent()
-	case token.Int:
+	case TokenInt:
 		v, _ := strconv.ParseInt(p.tokenLit, 10, 64)
 		x := &IntLit{
 			Value:    v,
@@ -313,7 +311,7 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
-	case token.Float:
+	case TokenFloat:
 		v, _ := strconv.ParseFloat(p.tokenLit, 64)
 		x := &FloatLit{
 			Value:    v,
@@ -322,9 +320,9 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
-	case token.Char:
+	case TokenChar:
 		return p.parseCharLit()
-	case token.String:
+	case TokenString:
 		v, _ := strconv.Unquote(p.tokenLit)
 		x := &StringLit{
 			Value:    v,
@@ -333,7 +331,7 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
-	case token.True:
+	case TokenTrue:
 		x := &BoolLit{
 			Value:    true,
 			ValuePos: p.pos,
@@ -341,7 +339,7 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
-	case token.False:
+	case TokenFalse:
 		x := &BoolLit{
 			Value:    false,
 			ValuePos: p.pos,
@@ -349,31 +347,31 @@ func (p *Parser) parseOperand() Expr {
 		}
 		p.next()
 		return x
-	case token.Nil:
+	case TokenNil:
 		x := &NilLit{TokenPos: p.pos}
 		p.next()
 		return x
-	case token.Import:
+	case TokenImport:
 		return p.parseImportExpr()
-	case token.LParen:
+	case TokenLParen:
 		lparen := p.pos
 		p.next()
 		p.exprLevel++
 		x := p.parseExpr()
 		p.exprLevel--
-		rparen := p.expect(token.RParen)
+		rparen := p.expect(TokenRParen)
 		return &ParenExpr{
 			LParen: lparen,
 			Expr:   x,
 			RParen: rparen,
 		}
-	case token.LBrack: // array literal
+	case TokenLBrack: // array literal
 		return p.parseArrayLit()
-	case token.LBrace: // map literal
+	case TokenLBrace: // map literal
 		return p.parseMapLit()
-	case token.Func: // function literal
+	case TokenFunc: // function literal
 		return p.parseFuncLit()
-	case token.Error: // error expression
+	case TokenError: // error expression
 		return p.parseErrorExpr()
 	}
 
@@ -386,8 +384,8 @@ func (p *Parser) parseOperand() Expr {
 func (p *Parser) parseImportExpr() Expr {
 	pos := p.pos
 	p.next()
-	p.expect(token.LParen)
-	if p.token != token.String {
+	p.expect(TokenLParen)
+	if p.token != TokenString {
 		p.errorExpected(p.pos, "module name")
 		p.advance(stmtStart)
 		return &BadExpr{From: pos, To: p.pos}
@@ -397,12 +395,12 @@ func (p *Parser) parseImportExpr() Expr {
 	moduleName, _ := strconv.Unquote(p.tokenLit)
 	expr := &ImportExpr{
 		ModuleName: moduleName,
-		Token:      token.Import,
+		Token:      TokenImport,
 		TokenPos:   pos,
 	}
 
 	p.next()
-	p.expect(token.RParen)
+	p.expect(TokenRParen)
 	return expr
 }
 
@@ -449,20 +447,20 @@ func (p *Parser) parseArrayLit() Expr {
 		defer untracep(tracep(p, "ArrayLit"))
 	}
 
-	lbrack := p.expect(token.LBrack)
+	lbrack := p.expect(TokenLBrack)
 	p.exprLevel++
 
 	var elements []Expr
-	for p.token != token.RBrack && p.token != token.EOF {
+	for p.token != TokenRBrack && p.token != TokenEOF {
 		elements = append(elements, p.parseExpr())
 
-		if !p.expectComma(token.RBrack, "array element") {
+		if !p.expectComma(TokenRBrack, "array element") {
 			break
 		}
 	}
 
 	p.exprLevel--
-	rbrack := p.expect(token.RBrack)
+	rbrack := p.expect(TokenRBrack)
 	return &ArrayLit{
 		Elements: elements,
 		LBrack:   lbrack,
@@ -474,9 +472,9 @@ func (p *Parser) parseErrorExpr() Expr {
 	pos := p.pos
 
 	p.next()
-	lparen := p.expect(token.LParen)
+	lparen := p.expect(TokenLParen)
 	value := p.parseExpr()
-	rparen := p.expect(token.RParen)
+	rparen := p.expect(TokenRParen)
 	return &ErrorExpr{
 		ErrorPos: pos,
 		Expr:     value,
@@ -490,7 +488,7 @@ func (p *Parser) parseFuncType() *FuncType {
 		defer untracep(tracep(p, "FuncType"))
 	}
 
-	pos := p.expect(token.Func)
+	pos := p.expect(TokenFunc)
 	params := p.parseIdentList()
 	return &FuncType{
 		FuncPos: pos,
@@ -503,9 +501,9 @@ func (p *Parser) parseBody() *BlockStmt {
 		defer untracep(tracep(p, "Body"))
 	}
 
-	lbrace := p.expect(token.LBrace)
+	lbrace := p.expect(TokenLBrace)
 	list := p.parseStmtList()
-	rbrace := p.expect(token.RBrace)
+	rbrace := p.expect(TokenRBrace)
 	return &BlockStmt{
 		LBrace: lbrace,
 		RBrace: rbrace,
@@ -518,7 +516,7 @@ func (p *Parser) parseStmtList() (list []Stmt) {
 		defer untracep(tracep(p, "StatementList"))
 	}
 
-	for p.token != token.RBrace && p.token != token.EOF {
+	for p.token != TokenRBrace && p.token != TokenEOF {
 		list = append(list, p.parseStmt())
 	}
 	return
@@ -528,11 +526,11 @@ func (p *Parser) parseIdent() *Ident {
 	pos := p.pos
 	name := "_"
 
-	if p.token == token.Ident {
+	if p.token == TokenIdent {
 		name = p.tokenLit
 		p.next()
 	} else {
-		p.expect(token.Ident)
+		p.expect(TokenIdent)
 	}
 	return &Ident{
 		NamePos: pos,
@@ -546,18 +544,18 @@ func (p *Parser) parseIdentList() *IdentList {
 	}
 
 	var params []*Ident
-	lparen := p.expect(token.LParen)
+	lparen := p.expect(TokenLParen)
 	isVarArgs := false
-	if p.token != token.RParen {
-		if p.token == token.Ellipsis {
+	if p.token != TokenRParen {
+		if p.token == TokenEllipsis {
 			isVarArgs = true
 			p.next()
 		}
 
 		params = append(params, p.parseIdent())
-		for !isVarArgs && p.token == token.Comma {
+		for !isVarArgs && p.token == TokenComma {
 			p.next()
-			if p.token == token.Ellipsis {
+			if p.token == TokenEllipsis {
 				isVarArgs = true
 				p.next()
 			}
@@ -565,7 +563,7 @@ func (p *Parser) parseIdentList() *IdentList {
 		}
 	}
 
-	rparen := p.expect(token.RParen)
+	rparen := p.expect(TokenRParen)
 	return &IdentList{
 		LParen:  lparen,
 		RParen:  rparen,
@@ -581,29 +579,29 @@ func (p *Parser) parseStmt() (stmt Stmt) {
 
 	switch p.token {
 	case // simple statements
-		token.Func, token.Error, token.Ident, token.Int,
-		token.Float, token.Char, token.String, token.True, token.False,
-		token.Nil, token.Import, token.LParen, token.LBrace,
-		token.LBrack, token.Add, token.Sub, token.Mul, token.And, token.Xor,
-		token.Not:
+		TokenFunc, TokenError, TokenIdent, TokenInt,
+		TokenFloat, TokenChar, TokenString, TokenTrue, TokenFalse,
+		TokenNil, TokenImport, TokenLParen, TokenLBrace,
+		TokenLBrack, TokenAdd, TokenSub, TokenMul, TokenAnd, TokenXor,
+		TokenNot:
 		s := p.parseSimpleStmt(false)
 		p.expectSemi()
 		return s
-	case token.Return:
+	case TokenReturn:
 		return p.parseReturnStmt()
-	case token.Export:
+	case TokenExport:
 		return p.parseExportStmt()
-	case token.If:
+	case TokenIf:
 		return p.parseIfStmt()
-	case token.For:
+	case TokenFor:
 		return p.parseForStmt()
-	case token.Break, token.Continue:
+	case TokenBreak, TokenContinue:
 		return p.parseBranchStmt(p.token)
-	case token.Semicolon:
+	case TokenSemicolon:
 		s := &EmptyStmt{Semicolon: p.pos, Implicit: p.tokenLit == "\n"}
 		p.next()
 		return s
-	case token.RBrace:
+	case TokenRBrace:
 		// semicolon may be omitted before a closing "}"
 		return &EmptyStmt{Semicolon: p.pos, Implicit: true}
 	default:
@@ -619,10 +617,10 @@ func (p *Parser) parseForStmt() Stmt {
 		defer untracep(tracep(p, "ForStmt"))
 	}
 
-	pos := p.expect(token.For)
+	pos := p.expect(TokenFor)
 
 	// for {}
-	if p.token == token.LBrace {
+	if p.token == TokenLBrace {
 		body := p.parseBlockStmt()
 		p.expectSemi()
 
@@ -636,7 +634,7 @@ func (p *Parser) parseForStmt() Stmt {
 	p.exprLevel = -1
 
 	var s1 Stmt
-	if p.token != token.Semicolon { // skipping init
+	if p.token != TokenSemicolon { // skipping init
 		s1 = p.parseSimpleStmt(true)
 	}
 
@@ -653,13 +651,13 @@ func (p *Parser) parseForStmt() Stmt {
 
 	// for init; cond; post {}
 	var s2, s3 Stmt
-	if p.token == token.Semicolon {
+	if p.token == TokenSemicolon {
 		p.next()
-		if p.token != token.Semicolon {
+		if p.token != TokenSemicolon {
 			s2 = p.parseSimpleStmt(false) // cond
 		}
-		p.expect(token.Semicolon)
-		if p.token != token.LBrace {
+		p.expect(TokenSemicolon)
+		if p.token != TokenLBrace {
 			s3 = p.parseSimpleStmt(false) // post
 		}
 	} else {
@@ -682,7 +680,7 @@ func (p *Parser) parseForStmt() Stmt {
 	}
 }
 
-func (p *Parser) parseBranchStmt(tok token.Token) Stmt {
+func (p *Parser) parseBranchStmt(tok Token) Stmt {
 	if p.trace {
 		defer untracep(tracep(p, "BranchStmt"))
 	}
@@ -690,7 +688,7 @@ func (p *Parser) parseBranchStmt(tok token.Token) Stmt {
 	pos := p.expect(tok)
 
 	var label *Ident
-	if p.token == token.Ident {
+	if p.token == TokenIdent {
 		label = p.parseIdent()
 	}
 	p.expectSemi()
@@ -706,18 +704,18 @@ func (p *Parser) parseIfStmt() Stmt {
 		defer untracep(tracep(p, "IfStmt"))
 	}
 
-	pos := p.expect(token.If)
+	pos := p.expect(TokenIf)
 	init, cond := p.parseIfHeader()
 	body := p.parseBlockStmt()
 
 	var elseStmt Stmt
-	if p.token == token.Else {
+	if p.token == TokenElse {
 		p.next()
 
 		switch p.token {
-		case token.If:
+		case TokenIf:
 			elseStmt = p.parseIfStmt()
-		case token.LBrace:
+		case TokenLBrace:
 			elseStmt = p.parseBlockStmt()
 			p.expectSemi()
 		default:
@@ -741,9 +739,9 @@ func (p *Parser) parseBlockStmt() *BlockStmt {
 		defer untracep(tracep(p, "BlockStmt"))
 	}
 
-	lbrace := p.expect(token.LBrace)
+	lbrace := p.expect(TokenLBrace)
 	list := p.parseStmtList()
-	rbrace := p.expect(token.RBrace)
+	rbrace := p.expect(TokenRBrace)
 	return &BlockStmt{
 		LBrace: lbrace,
 		RBrace: rbrace,
@@ -752,7 +750,7 @@ func (p *Parser) parseBlockStmt() *BlockStmt {
 }
 
 func (p *Parser) parseIfHeader() (init Stmt, cond Expr) {
-	if p.token == token.LBrace {
+	if p.token == TokenLBrace {
 		p.error(p.pos, "missing condition in if statement")
 		cond = &BadExpr{From: p.pos, To: p.pos}
 		return
@@ -760,17 +758,17 @@ func (p *Parser) parseIfHeader() (init Stmt, cond Expr) {
 
 	outer := p.exprLevel
 	p.exprLevel = -1
-	if p.token == token.Semicolon {
+	if p.token == TokenSemicolon {
 		p.error(p.pos, "missing init in if statement")
 		return
 	}
 	init = p.parseSimpleStmt(false)
 
 	var condStmt Stmt
-	if p.token == token.LBrace {
+	if p.token == TokenLBrace {
 		condStmt = init
 		init = nil
-	} else if p.token == token.Semicolon {
+	} else if p.token == TokenSemicolon {
 		p.next()
 
 		condStmt = p.parseSimpleStmt(false)
@@ -811,10 +809,10 @@ func (p *Parser) parseReturnStmt() Stmt {
 	}
 
 	pos := p.pos
-	p.expect(token.Return)
+	p.expect(TokenReturn)
 
 	var x Expr
-	if p.token != token.Semicolon && p.token != token.RBrace {
+	if p.token != TokenSemicolon && p.token != TokenRBrace {
 		x = p.parseExpr()
 	}
 	p.expectSemi()
@@ -830,7 +828,7 @@ func (p *Parser) parseExportStmt() Stmt {
 	}
 
 	pos := p.pos
-	p.expect(token.Export)
+	p.expect(TokenExport)
 	x := p.parseExpr()
 	p.expectSemi()
 	return &ExportStmt{
@@ -847,7 +845,7 @@ func (p *Parser) parseSimpleStmt(forIn bool) Stmt {
 	x := p.parseExprList()
 
 	switch p.token {
-	case token.Assign, token.Define: // assignment statement
+	case TokenAssign, TokenDefine: // assignment statement
 		pos, tok := p.pos, p.token
 		p.next()
 		y := p.parseExprList()
@@ -857,7 +855,7 @@ func (p *Parser) parseSimpleStmt(forIn bool) Stmt {
 			Token:    tok,
 			TokenPos: pos,
 		}
-	case token.In:
+	case TokenIn:
 		if forIn {
 			p.next()
 			y := p.parseExpr()
@@ -899,10 +897,10 @@ func (p *Parser) parseSimpleStmt(forIn bool) Stmt {
 	}
 
 	switch p.token {
-	case token.Define,
-		token.AddAssign, token.SubAssign, token.MulAssign, token.QuoAssign,
-		token.RemAssign, token.AndAssign, token.OrAssign, token.XorAssign,
-		token.ShlAssign, token.ShrAssign, token.AndNotAssign:
+	case TokenDefine,
+		TokenAddAssign, TokenSubAssign, TokenMulAssign, TokenQuoAssign,
+		TokenRemAssign, TokenAndAssign, TokenOrAssign, TokenXorAssign,
+		TokenShlAssign, TokenShrAssign, TokenAndNotAssign:
 		pos, tok := p.pos, p.token
 		p.next()
 		y := p.parseExpr()
@@ -912,7 +910,7 @@ func (p *Parser) parseSimpleStmt(forIn bool) Stmt {
 			Token:    tok,
 			TokenPos: pos,
 		}
-	case token.Inc, token.Dec:
+	case TokenInc, TokenDec:
 		// increment or decrement statement
 		s := &IncDecStmt{Expr: x[0], Token: p.token, TokenPos: p.pos}
 		p.next()
@@ -927,7 +925,7 @@ func (p *Parser) parseExprList() (list []Expr) {
 	}
 
 	list = append(list, p.parseExpr())
-	for p.token == token.Comma {
+	for p.token == TokenComma {
 		p.next()
 		list = append(list, p.parseExpr())
 	}
@@ -941,16 +939,16 @@ func (p *Parser) parseMapElementLit() *MapElementLit {
 
 	pos := p.pos
 	name := "_"
-	if p.token == token.Ident {
+	if p.token == TokenIdent {
 		name = p.tokenLit
-	} else if p.token == token.String {
+	} else if p.token == TokenString {
 		v, _ := strconv.Unquote(p.tokenLit)
 		name = v
 	} else {
 		p.errorExpected(pos, "map key")
 	}
 	p.next()
-	colonPos := p.expect(token.Colon)
+	colonPos := p.expect(TokenColon)
 	valueExpr := p.parseExpr()
 	return &MapElementLit{
 		Key:      name,
@@ -965,20 +963,20 @@ func (p *Parser) parseMapLit() *MapLit {
 		defer untracep(tracep(p, "MapLit"))
 	}
 
-	lbrace := p.expect(token.LBrace)
+	lbrace := p.expect(TokenLBrace)
 	p.exprLevel++
 
 	var elements []*MapElementLit
-	for p.token != token.RBrace && p.token != token.EOF {
+	for p.token != TokenRBrace && p.token != TokenEOF {
 		elements = append(elements, p.parseMapElementLit())
 
-		if !p.expectComma(token.RBrace, "map element") {
+		if !p.expectComma(TokenRBrace, "map element") {
 			break
 		}
 	}
 
 	p.exprLevel--
-	rbrace := p.expect(token.RBrace)
+	rbrace := p.expect(TokenRBrace)
 	return &MapLit{
 		LBrace:   lbrace,
 		RBrace:   rbrace,
@@ -986,7 +984,7 @@ func (p *Parser) parseMapLit() *MapLit {
 	}
 }
 
-func (p *Parser) expect(token token.Token) Pos {
+func (p *Parser) expect(token Token) Pos {
 	pos := p.pos
 
 	if p.token != token {
@@ -998,13 +996,13 @@ func (p *Parser) expect(token token.Token) Pos {
 
 func (p *Parser) expectSemi() {
 	switch p.token {
-	case token.RParen, token.RBrace:
+	case TokenRParen, TokenRBrace:
 		// semicolon is optional before a closing ')' or '}'
-	case token.Comma:
+	case TokenComma:
 		// permit a ',' instead of a ';' but complain
 		p.errorExpected(p.pos, "';'")
 		fallthrough
-	case token.Semicolon:
+	case TokenSemicolon:
 		p.next()
 	default:
 		p.errorExpected(p.pos, "';'")
@@ -1012,8 +1010,8 @@ func (p *Parser) expectSemi() {
 	}
 }
 
-func (p *Parser) advance(to map[token.Token]bool) {
-	for ; p.token != token.EOF; p.next() {
+func (p *Parser) advance(to map[Token]bool) {
+	for ; p.token != TokenEOF; p.next() {
 		if to[p.token] {
 			if p.pos == p.syncPos && p.syncCount < 10 {
 				p.syncCount++
@@ -1048,7 +1046,7 @@ func (p *Parser) errorExpected(pos Pos, msg string) {
 	if pos == p.pos {
 		// error happened at the current position: provide more specific
 		switch {
-		case p.token == token.Semicolon && p.tokenLit == "\n":
+		case p.token == TokenSemicolon && p.tokenLit == "\n":
 			msg += ", found newline"
 		case p.token.IsLiteral():
 			msg += ", found " + p.tokenLit

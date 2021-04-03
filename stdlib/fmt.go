@@ -18,7 +18,7 @@ func fmtPrint(args ...gslang.Object) (ret gslang.Object, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, _ = fmt.Print(printArgs...)
+	fmt.Print(printArgs...)
 	return nil, nil
 }
 
@@ -55,7 +55,7 @@ func fmtPrintln(args ...gslang.Object) (ret gslang.Object, err error) {
 		return nil, err
 	}
 	printArgs = append(printArgs, "\n")
-	_, _ = fmt.Print(printArgs...)
+	fmt.Print(printArgs...)
 	return nil, nil
 }
 

@@ -2,8 +2,6 @@ package parser
 
 import (
 	"strings"
-
-	"github.com/gslang/gslang/token"
 )
 
 // Stmt represents a statement in the AST.
@@ -16,7 +14,7 @@ type Stmt interface {
 type AssignStmt struct {
 	LHS      []Expr
 	RHS      []Expr
-	Token    token.Token
+	Token    Token
 	TokenPos Pos
 }
 
@@ -95,7 +93,7 @@ func (s *BlockStmt) String() string {
 
 // BranchStmt represents a branch statement.
 type BranchStmt struct {
-	Token    token.Token
+	Token    Token
 	TokenPos Pos
 	Label    *Ident
 }
@@ -300,7 +298,7 @@ func (s *IfStmt) String() string {
 // IncDecStmt represents increment or decrement statement.
 type IncDecStmt struct {
 	Expr     Expr
-	Token    token.Token
+	Token    Token
 	TokenPos Pos
 }
 

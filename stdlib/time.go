@@ -1,45 +1,44 @@
 package stdlib
 
 import (
-	"time"
-
+	t "time"
 	"github.com/gslang/gslang"
 )
 
 var timeModule = map[string]gslang.Object{
-	"format_ansic":        &gslang.String{Value: time.ANSIC},
-	"format_unix_date":    &gslang.String{Value: time.UnixDate},
-	"format_ruby_date":    &gslang.String{Value: time.RubyDate},
-	"format_rfc822":       &gslang.String{Value: time.RFC822},
-	"format_rfc822z":      &gslang.String{Value: time.RFC822Z},
-	"format_rfc850":       &gslang.String{Value: time.RFC850},
-	"format_rfc1123":      &gslang.String{Value: time.RFC1123},
-	"format_rfc1123z":     &gslang.String{Value: time.RFC1123Z},
-	"format_rfc3339":      &gslang.String{Value: time.RFC3339},
-	"format_rfc3339_nano": &gslang.String{Value: time.RFC3339Nano},
-	"format_kitchen":      &gslang.String{Value: time.Kitchen},
-	"format_stamp":        &gslang.String{Value: time.Stamp},
-	"format_stamp_milli":  &gslang.String{Value: time.StampMilli},
-	"format_stamp_micro":  &gslang.String{Value: time.StampMicro},
-	"format_stamp_nano":   &gslang.String{Value: time.StampNano},
-	"nanosecond":          &gslang.Int{Value: int64(time.Nanosecond)},
-	"microsecond":         &gslang.Int{Value: int64(time.Microsecond)},
-	"millisecond":         &gslang.Int{Value: int64(time.Millisecond)},
-	"second":              &gslang.Int{Value: int64(time.Second)},
-	"minute":              &gslang.Int{Value: int64(time.Minute)},
-	"hour":                &gslang.Int{Value: int64(time.Hour)},
-	"january":             &gslang.Int{Value: int64(time.January)},
-	"february":            &gslang.Int{Value: int64(time.February)},
-	"march":               &gslang.Int{Value: int64(time.March)},
-	"april":               &gslang.Int{Value: int64(time.April)},
-	"may":                 &gslang.Int{Value: int64(time.May)},
-	"june":                &gslang.Int{Value: int64(time.June)},
-	"july":                &gslang.Int{Value: int64(time.July)},
-	"august":              &gslang.Int{Value: int64(time.August)},
-	"september":           &gslang.Int{Value: int64(time.September)},
-	"october":             &gslang.Int{Value: int64(time.October)},
-	"november":            &gslang.Int{Value: int64(time.November)},
-	"december":            &gslang.Int{Value: int64(time.December)},
+	"format_ansic":        &gslang.String{Value: t.ANSIC},
+	"format_unix_date":    &gslang.String{Value: t.UnixDate},
+	"format_ruby_date":    &gslang.String{Value: t.RubyDate},
+	"format_rfc822":       &gslang.String{Value: t.RFC822},
+	"format_rfc822z":      &gslang.String{Value: t.RFC822Z},
+	"format_rfc850":       &gslang.String{Value: t.RFC850},
+	"format_rfc1123":      &gslang.String{Value: t.RFC1123},
+	"format_rfc1123z":     &gslang.String{Value: t.RFC1123Z},
+	"format_rfc3339":      &gslang.String{Value: t.RFC3339},
+	"format_rfc3339_nano": &gslang.String{Value: t.RFC3339Nano},
+	"format_kitchen":      &gslang.String{Value: t.Kitchen},
+	"format_stamp":        &gslang.String{Value: t.Stamp},
+	"format_stamp_milli":  &gslang.String{Value: t.StampMilli},
+	"format_stamp_micro":  &gslang.String{Value: t.StampMicro},
+	"format_stamp_nano":   &gslang.String{Value: t.StampNano},
+	"nanosecond":          &gslang.Int{Value: int64(t.Nanosecond)},
+	"microsecond":         &gslang.Int{Value: int64(t.Microsecond)},
+	"millisecond":         &gslang.Int{Value: int64(t.Millisecond)},
+	"second":              &gslang.Int{Value: int64(t.Second)},
+	"minute":              &gslang.Int{Value: int64(t.Minute)},
+	"hour":                &gslang.Int{Value: int64(t.Hour)},
+	"january":             &gslang.Int{Value: int64(t.January)},
+	"february":            &gslang.Int{Value: int64(t.February)},
+	"march":               &gslang.Int{Value: int64(t.March)},
+	"april":               &gslang.Int{Value: int64(t.April)},
+	"may":                 &gslang.Int{Value: int64(t.May)},
+	"june":                &gslang.Int{Value: int64(t.June)},
+	"july":                &gslang.Int{Value: int64(t.July)},
+	"august":              &gslang.Int{Value: int64(t.August)},
+	"september":           &gslang.Int{Value: int64(t.September)},
+	"october":             &gslang.Int{Value: int64(t.October)},
+	"november":            &gslang.Int{Value: int64(t.November)},
+	"december":            &gslang.Int{Value: int64(t.December)},
 	"sleep": &gslang.UserFunction{
 		Name:  "sleep",
 		Value: timeSleep,
@@ -198,7 +197,7 @@ func timeSleep(args ...gslang.Object) (ret gslang.Object, err error) {
 		return
 	}
 
-	time.Sleep(time.Duration(i1))
+	t.Sleep(t.Duration(i1))
 	ret = gslang.NilValue
 
 	return
@@ -223,7 +222,7 @@ func timeParseDuration(args ...gslang.Object) (
 		return
 	}
 
-	dur, err := time.ParseDuration(s1)
+	dur, err := t.ParseDuration(s1)
 	if err != nil {
 		ret = wrapError(err)
 		return
@@ -253,7 +252,7 @@ func timeSince(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.Int{Value: int64(time.Since(t1))}
+	ret = &gslang.Int{Value: int64(t.Since(t1))}
 
 	return
 }
@@ -277,7 +276,7 @@ func timeUntil(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.Int{Value: int64(time.Until(t1))}
+	ret = &gslang.Int{Value: int64(t.Until(t1))}
 
 	return
 }
@@ -301,7 +300,7 @@ func timeDurationHours(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.Float{Value: time.Duration(i1).Hours()}
+	ret = &gslang.Float{Value: t.Duration(i1).Hours()}
 
 	return
 }
@@ -325,7 +324,7 @@ func timeDurationMinutes(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.Float{Value: time.Duration(i1).Minutes()}
+	ret = &gslang.Float{Value: t.Duration(i1).Minutes()}
 
 	return
 }
@@ -349,7 +348,7 @@ func timeDurationNanoseconds(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.Int{Value: time.Duration(i1).Nanoseconds()}
+	ret = &gslang.Int{Value: t.Duration(i1).Nanoseconds()}
 
 	return
 }
@@ -373,7 +372,7 @@ func timeDurationSeconds(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.Float{Value: time.Duration(i1).Seconds()}
+	ret = &gslang.Float{Value: t.Duration(i1).Seconds()}
 
 	return
 }
@@ -397,7 +396,7 @@ func timeDurationString(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.String{Value: time.Duration(i1).String()}
+	ret = &gslang.String{Value: t.Duration(i1).String()}
 
 	return
 }
@@ -421,7 +420,7 @@ func timeMonthString(args ...gslang.Object) (
 		return
 	}
 
-	ret = &gslang.String{Value: time.Month(i1).String()}
+	ret = &gslang.String{Value: t.Month(i1).String()}
 
 	return
 }
@@ -500,8 +499,8 @@ func timeDate(args ...gslang.Object) (
 	}
 
 	ret = &gslang.Time{
-		Value: time.Date(i1,
-			time.Month(i2), i3, i4, i5, i6, i7, time.Now().Location()),
+		Value: t.Date(i1,
+			t.Month(i2), i3, i4, i5, i6, i7, t.Now().Location()),
 	}
 
 	return
@@ -513,7 +512,7 @@ func timeNow(args ...gslang.Object) (ret gslang.Object, err error) {
 		return
 	}
 
-	ret = &gslang.Time{Value: time.Now()}
+	ret = &gslang.Time{Value: t.Now()}
 
 	return
 }
@@ -544,7 +543,7 @@ func timeParse(args ...gslang.Object) (ret gslang.Object, err error) {
 		return
 	}
 
-	parsed, err := time.Parse(s1, s2)
+	parsed, err := t.Parse(s1, s2)
 	if err != nil {
 		ret = wrapError(err)
 		return
@@ -581,7 +580,7 @@ func timeUnix(args ...gslang.Object) (ret gslang.Object, err error) {
 		return
 	}
 
-	ret = &gslang.Time{Value: time.Unix(i1, i2)}
+	ret = &gslang.Time{Value: t.Unix(i1, i2)}
 
 	return
 }
@@ -612,7 +611,7 @@ func timeAdd(args ...gslang.Object) (ret gslang.Object, err error) {
 		return
 	}
 
-	ret = &gslang.Time{Value: t1.Add(time.Duration(i2))}
+	ret = &gslang.Time{Value: t1.Add(t.Duration(i2))}
 
 	return
 }

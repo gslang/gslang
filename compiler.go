@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gslang/gslang/parser"
-	"github.com/gslang/gslang/token"
 )
 
 // compilationScope represents a compiled instructions and the last two
@@ -123,9 +122,9 @@ func (c *Compiler) Compile(node parser.Node) error {
 		}
 		c.emit(node, parser.OpPop)
 	case *parser.IncDecStmt:
-		op := token.AddAssign
-		if node.Token == token.Dec {
-			op = token.SubAssign
+		op := parser.TokenAddAssign
+		if node.Token == parser.TokenDec {
+			op = parser.TokenSubAssign
 		}
 		return c.compileAssign(node, []parser.Expr{node.Expr},
 			[]parser.Expr{&parser.IntLit{Value: 1}}, op)
@@ -134,26 +133,26 @@ func (c *Compiler) Compile(node parser.Node) error {
 			return err
 		}
 	case *parser.BinaryExpr:
-		if node.Token == token.LAnd || node.Token == token.LOr {
+		if node.Token == parser.TokenLAnd || node.Token == parser.TokenLOr {
 			return c.compileLogical(node)
 		}
-		if node.Token == token.Less {
+		if node.Token == parser.TokenLess {
 			if err := c.Compile(node.RHS); err != nil {
 				return err
 			}
 			if err := c.Compile(node.LHS); err != nil {
 				return err
 			}
-			c.emit(node, parser.OpBinaryOp, int(token.Greater))
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenGreater))
 			return nil
-		} else if node.Token == token.LessEq {
+		} else if node.Token == parser.TokenLessEq {
 			if err := c.Compile(node.RHS); err != nil {
 				return err
 			}
 			if err := c.Compile(node.LHS); err != nil {
 				return err
 			}
-			c.emit(node, parser.OpBinaryOp, int(token.GreaterEq))
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenGreaterEq))
 			return nil
 		}
 		if err := c.Compile(node.LHS); err != nil {
@@ -164,36 +163,36 @@ func (c *Compiler) Compile(node parser.Node) error {
 		}
 
 		switch node.Token {
-		case token.Add:
-			c.emit(node, parser.OpBinaryOp, int(token.Add))
-		case token.Sub:
-			c.emit(node, parser.OpBinaryOp, int(token.Sub))
-		case token.Mul:
-			c.emit(node, parser.OpBinaryOp, int(token.Mul))
-		case token.Quo:
-			c.emit(node, parser.OpBinaryOp, int(token.Quo))
-		case token.Rem:
-			c.emit(node, parser.OpBinaryOp, int(token.Rem))
-		case token.Greater:
-			c.emit(node, parser.OpBinaryOp, int(token.Greater))
-		case token.GreaterEq:
-			c.emit(node, parser.OpBinaryOp, int(token.GreaterEq))
-		case token.Equal:
+		case parser.TokenAdd:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenAdd))
+		case parser.TokenSub:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenSub))
+		case parser.TokenMul:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenMul))
+		case parser.TokenQuo:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenQuo))
+		case parser.TokenRem:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenRem))
+		case parser.TokenGreater:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenGreater))
+		case parser.TokenGreaterEq:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenGreaterEq))
+		case parser.TokenEqual:
 			c.emit(node, parser.OpEqual)
-		case token.NotEqual:
+		case parser.TokenNotEqual:
 			c.emit(node, parser.OpNotEqual)
-		case token.And:
-			c.emit(node, parser.OpBinaryOp, int(token.And))
-		case token.Or:
-			c.emit(node, parser.OpBinaryOp, int(token.Or))
-		case token.Xor:
-			c.emit(node, parser.OpBinaryOp, int(token.Xor))
-		case token.AndNot:
-			c.emit(node, parser.OpBinaryOp, int(token.AndNot))
-		case token.Shl:
-			c.emit(node, parser.OpBinaryOp, int(token.Shl))
-		case token.Shr:
-			c.emit(node, parser.OpBinaryOp, int(token.Shr))
+		case parser.TokenAnd:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenAnd))
+		case parser.TokenOr:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenOr))
+		case parser.TokenXor:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenXor))
+		case parser.TokenAndNot:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenAndNot))
+		case parser.TokenShl:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenShl))
+		case parser.TokenShr:
+			c.emit(node, parser.OpBinaryOp, int(parser.TokenShr))
 		default:
 			return c.errorf(node, "invalid binary operator: %s",
 				node.Token.String())
@@ -227,13 +226,13 @@ func (c *Compiler) Compile(node parser.Node) error {
 		}
 
 		switch node.Token {
-		case token.Not:
+		case parser.TokenNot:
 			c.emit(node, parser.OpLNot)
-		case token.Sub:
+		case parser.TokenSub:
 			c.emit(node, parser.OpMinus)
-		case token.Xor:
+		case parser.TokenXor:
 			c.emit(node, parser.OpBComplement)
-		case token.Add:
+		case parser.TokenAdd:
 			// do nothing?
 		default:
 			return c.errorf(node,
@@ -284,14 +283,14 @@ func (c *Compiler) Compile(node parser.Node) error {
 	case *parser.ForInStmt:
 		return c.compileForInStmt(node)
 	case *parser.BranchStmt:
-		if node.Token == token.Break {
+		if node.Token == parser.TokenBreak {
 			curLoop := c.currentLoop()
 			if curLoop == nil {
 				return c.errorf(node, "break not allowed outside loop")
 			}
 			pos := c.emit(node, parser.OpJump, 0)
 			curLoop.Breaks = append(curLoop.Breaks, pos)
-		} else if node.Token == token.Continue {
+		} else if node.Token == parser.TokenContinue {
 			curLoop := c.currentLoop()
 			if curLoop == nil {
 				return c.errorf(node, "continue not allowed outside loop")
@@ -637,7 +636,7 @@ func (c *Compiler) SetImportDir(dir string) {
 func (c *Compiler) compileAssign(
 	node parser.Node,
 	lhs, rhs []parser.Expr,
-	op token.Token,
+	op parser.Token,
 ) error {
 	numLHS, numRHS := len(lhs), len(rhs)
 	if numLHS > 1 || numRHS > 1 {
@@ -648,13 +647,13 @@ func (c *Compiler) compileAssign(
 	ident, selectors := resolveAssignLHS(lhs[0])
 	numSel := len(selectors)
 
-	if op == token.Define && numSel > 0 {
+	if op == parser.TokenDefine && numSel > 0 {
 		// using selector on new variable does not make sense
 		return c.errorf(node, "operator ':=' not allowed with selector")
 	}
 
 	symbol, depth, exists := c.symbol.Resolve(ident, false)
-	if op == token.Define {
+	if op == parser.TokenDefine {
 		if depth == 0 && exists {
 			return c.errorf(node, "'%s' redeclared in this block", ident)
 		}
@@ -666,7 +665,7 @@ func (c *Compiler) compileAssign(
 	}
 
 	// +=, -=, *=, /=
-	if op != token.Assign && op != token.Define {
+	if op != parser.TokenAssign && op != parser.TokenDefine {
 		if err := c.Compile(lhs[0]); err != nil {
 			return err
 		}
@@ -680,28 +679,28 @@ func (c *Compiler) compileAssign(
 	}
 
 	switch op {
-	case token.AddAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Add))
-	case token.SubAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Sub))
-	case token.MulAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Mul))
-	case token.QuoAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Quo))
-	case token.RemAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Rem))
-	case token.AndAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.And))
-	case token.OrAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Or))
-	case token.AndNotAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.AndNot))
-	case token.XorAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Xor))
-	case token.ShlAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Shl))
-	case token.ShrAssign:
-		c.emit(node, parser.OpBinaryOp, int(token.Shr))
+	case parser.TokenAddAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenAdd))
+	case parser.TokenSubAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenSub))
+	case parser.TokenMulAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenMul))
+	case parser.TokenQuoAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenQuo))
+	case parser.TokenRemAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenRem))
+	case parser.TokenAndAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenAnd))
+	case parser.TokenOrAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenOr))
+	case parser.TokenAndNotAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenAndNot))
+	case parser.TokenXorAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenXor))
+	case parser.TokenShlAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenShl))
+	case parser.TokenShrAssign:
+		c.emit(node, parser.OpBinaryOp, int(parser.TokenShr))
 	}
 
 	// compile selector expressions (right to left)
@@ -722,7 +721,7 @@ func (c *Compiler) compileAssign(
 		if numSel > 0 {
 			c.emit(node, parser.OpSetSelLocal, symbol.Index, numSel)
 		} else {
-			if op == token.Define && !symbol.LocalAssigned {
+			if op == parser.TokenDefine && !symbol.LocalAssigned {
 				c.emit(node, parser.OpDefineLocal, symbol.Index)
 			} else {
 				c.emit(node, parser.OpSetLocal, symbol.Index)
@@ -752,7 +751,7 @@ func (c *Compiler) compileLogical(node *parser.BinaryExpr) error {
 
 	// jump position
 	var jumpPos int
-	if node.Token == token.LAnd {
+	if node.Token == parser.TokenLAnd {
 		jumpPos = c.emit(node, parser.OpAndJump, 0)
 	} else {
 		jumpPos = c.emit(node, parser.OpOrJump, 0)

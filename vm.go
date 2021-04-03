@@ -5,7 +5,6 @@ import (
 	"sync/atomic"
 
 	"github.com/gslang/gslang/parser"
-	"github.com/gslang/gslang/token"
 )
 
 // frame represents a function call frame.
@@ -112,7 +111,7 @@ func (v *VM) run() {
 			v.ip++
 			right := v.stack[v.sp-1]
 			left := v.stack[v.sp-2]
-			tok := token.Token(v.curInsts[v.ip])
+			tok := parser.Token(v.curInsts[v.ip])
 			res, e := left.BinaryOp(tok, right)
 			if e != nil {
 				v.sp -= 2

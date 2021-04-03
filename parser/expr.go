@@ -2,8 +2,6 @@ package parser
 
 import (
 	"strings"
-
-	"github.com/gslang/gslang/token"
 )
 
 // Expr represents an expression node in the AST.
@@ -65,7 +63,7 @@ func (e *BadExpr) String() string {
 type BinaryExpr struct {
 	LHS      Expr
 	RHS      Expr
-	Token    token.Token
+	Token    Token
 	TokenPos Pos
 }
 
@@ -309,7 +307,7 @@ func (e *Ident) String() string {
 // ImportExpr represents an import expression
 type ImportExpr struct {
 	ModuleName string
-	Token      token.Token
+	Token      Token
 	TokenPos   Pos
 }
 
@@ -535,7 +533,7 @@ func (e *StringLit) String() string {
 // UnaryExpr represents an unary operator expression.
 type UnaryExpr struct {
 	Expr     Expr
-	Token    token.Token
+	Token    Token
 	TokenPos Pos
 }
 

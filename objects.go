@@ -9,15 +9,14 @@ import (
 	"time"
 
 	"github.com/gslang/gslang/parser"
-	"github.com/gslang/gslang/token"
 )
 
 var (
 	// TrueValue represents a true value.
-	TrueValue Object = &Bool{value: true}
+	TrueValue Object = &Bool{Value: true}
 
 	// FalseValue represents a false value.
-	FalseValue Object = &Bool{value: false}
+	FalseValue Object = &Bool{Value: false}
 
 	// NilValue represents an nil value.
 	NilValue Object = &Nil{}
@@ -34,7 +33,7 @@ type Object interface {
 	// BinaryOp should return another object that is the result of a given
 	// binary operator and a right-hand side object. If BinaryOp returns an
 	// error, the VM will treat it as a run-time error.
-	BinaryOp(op token.Token, rhs Object) (Object, error)
+	BinaryOp(op parser.Token, rhs Object) (Object, error)
 
 	// IsFalsy should return true if the value of the type should be considered
 	// as falsy.
@@ -97,7 +96,7 @@ func (o *ObjectImpl) String() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *ObjectImpl) BinaryOp(_ token.Token, _ Object) (Object, error) {
+func (o *ObjectImpl) BinaryOp(_ parser.Token, _ Object) (Object, error) {
 	return nil, ErrInvalidOperator
 }
 
@@ -169,10 +168,10 @@ func (o *Array) String() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *Array) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *Array) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	if rhs, ok := rhs.(*Array); ok {
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			if len(rhs.Value) == 0 {
 				return o, nil
 			}
@@ -267,11 +266,11 @@ type Bool struct {
 
 	// this is intentionally non-public to force using objects.TrueValue and
 	// FalseValue always
-	value bool
+	Value bool
 }
 
 func (o *Bool) String() string {
-	if o.value {
+	if o.Value {
 		return "true"
 	}
 
@@ -290,7 +289,7 @@ func (o *Bool) Copy() Object {
 
 // IsFalsy returns true if the value of the type is falsy.
 func (o *Bool) IsFalsy() bool {
-	return !o.value
+	return !o.Value
 }
 
 // Equals returns true if the value of the type is equal to the value of
@@ -301,13 +300,13 @@ func (o *Bool) Equals(x Object) bool {
 
 // GobDecode decodes bool value from input bytes.
 func (o *Bool) GobDecode(b []byte) (err error) {
-	o.value = b[0] == 1
+	o.Value = b[0] == 1
 	return
 }
 
 // GobEncode encodes bool values into bytes.
 func (o *Bool) GobEncode() (b []byte, err error) {
-	if o.value {
+	if o.Value {
 		b = []byte{1}
 	} else {
 		b = []byte{0}
@@ -389,9 +388,9 @@ func (o *Bytes) TypeName() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *Bytes) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *Bytes) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	switch op {
-	case token.Add:
+	case parser.TokenAdd:
 		switch rhs := rhs.(type) {
 		case *Bytes:
 			if len(o.Value)+len(rhs.Value) > MaxBytesLen {
@@ -469,38 +468,38 @@ func (o *Char) TypeName() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *Char) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *Char) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	switch rhs := rhs.(type) {
 	case *Char:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			r := o.Value + rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Char{Value: r}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			r := o.Value - rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Char{Value: r}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if o.Value < rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if o.Value > rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if o.Value <= rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if o.Value >= rhs.Value {
 				return TrueValue, nil
 			}
@@ -508,34 +507,34 @@ func (o *Char) BinaryOp(op token.Token, rhs Object) (Object, error) {
 		}
 	case *Int:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			r := o.Value + rune(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Char{Value: r}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			r := o.Value - rune(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Char{Value: r}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if int64(o.Value) < rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if int64(o.Value) > rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if int64(o.Value) <= rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if int64(o.Value) >= rhs.Value {
 				return TrueValue, nil
 			}
@@ -679,50 +678,50 @@ func (o *Float) TypeName() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *Float) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *Float) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	switch rhs := rhs.(type) {
 	case *Float:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			r := o.Value + rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			r := o.Value - rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Mul:
+		case parser.TokenMul:
 			r := o.Value * rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Quo:
+		case parser.TokenQuo:
 			r := o.Value / rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if o.Value < rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if o.Value > rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if o.Value <= rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if o.Value >= rhs.Value {
 				return TrueValue, nil
 			}
@@ -730,46 +729,46 @@ func (o *Float) BinaryOp(op token.Token, rhs Object) (Object, error) {
 		}
 	case *Int:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			r := o.Value + float64(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			r := o.Value - float64(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Mul:
+		case parser.TokenMul:
 			r := o.Value * float64(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Quo:
+		case parser.TokenQuo:
 			r := o.Value / float64(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Float{Value: r}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if o.Value < float64(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if o.Value > float64(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if o.Value <= float64(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if o.Value >= float64(rhs.Value) {
 				return TrueValue, nil
 			}
@@ -816,92 +815,92 @@ func (o *Int) TypeName() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *Int) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *Int) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	switch rhs := rhs.(type) {
 	case *Int:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			r := o.Value + rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			r := o.Value - rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Mul:
+		case parser.TokenMul:
 			r := o.Value * rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Quo:
+		case parser.TokenQuo:
 			r := o.Value / rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Rem:
+		case parser.TokenRem:
 			r := o.Value % rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.And:
+		case parser.TokenAnd:
 			r := o.Value & rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Or:
+		case parser.TokenOr:
 			r := o.Value | rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Xor:
+		case parser.TokenXor:
 			r := o.Value ^ rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.AndNot:
+		case parser.TokenAndNot:
 			r := o.Value &^ rhs.Value
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Shl:
+		case parser.TokenShl:
 			r := o.Value << uint64(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Shr:
+		case parser.TokenShr:
 			r := o.Value >> uint64(rhs.Value)
 			if r == o.Value {
 				return o, nil
 			}
 			return &Int{Value: r}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if o.Value < rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if o.Value > rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if o.Value <= rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if o.Value >= rhs.Value {
 				return TrueValue, nil
 			}
@@ -909,30 +908,30 @@ func (o *Int) BinaryOp(op token.Token, rhs Object) (Object, error) {
 		}
 	case *Float:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			return &Float{Value: float64(o.Value) + rhs.Value}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			return &Float{Value: float64(o.Value) - rhs.Value}, nil
-		case token.Mul:
+		case parser.TokenMul:
 			return &Float{Value: float64(o.Value) * rhs.Value}, nil
-		case token.Quo:
+		case parser.TokenQuo:
 			return &Float{Value: float64(o.Value) / rhs.Value}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if float64(o.Value) < rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if float64(o.Value) > rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if float64(o.Value) <= rhs.Value {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if float64(o.Value) >= rhs.Value {
 				return TrueValue, nil
 			}
@@ -940,26 +939,26 @@ func (o *Int) BinaryOp(op token.Token, rhs Object) (Object, error) {
 		}
 	case *Char:
 		switch op {
-		case token.Add:
+		case parser.TokenAdd:
 			return &Char{Value: rune(o.Value) + rhs.Value}, nil
-		case token.Sub:
+		case parser.TokenSub:
 			return &Char{Value: rune(o.Value) - rhs.Value}, nil
-		case token.Less:
+		case parser.TokenLess:
 			if o.Value < int64(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if o.Value > int64(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if o.Value <= int64(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if o.Value >= int64(rhs.Value) {
 				return TrueValue, nil
 			}
@@ -1136,9 +1135,9 @@ func (o *String) String() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *String) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	switch op {
-	case token.Add:
+	case parser.TokenAdd:
 		switch rhs := rhs.(type) {
 		case *String:
 			if len(o.Value)+len(rhs.Value) > MaxStringLen {
@@ -1152,7 +1151,7 @@ func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
 			}
 			return &String{Value: o.Value + rhsStr}, nil
 		}
-	case token.Less:
+	case parser.TokenLess:
 		switch rhs := rhs.(type) {
 		case *String:
 			if o.Value < rhs.Value {
@@ -1160,7 +1159,7 @@ func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
 			}
 			return FalseValue, nil
 		}
-	case token.LessEq:
+	case parser.TokenLessEq:
 		switch rhs := rhs.(type) {
 		case *String:
 			if o.Value <= rhs.Value {
@@ -1168,7 +1167,7 @@ func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
 			}
 			return FalseValue, nil
 		}
-	case token.Greater:
+	case parser.TokenGreater:
 		switch rhs := rhs.(type) {
 		case *String:
 			if o.Value > rhs.Value {
@@ -1176,7 +1175,7 @@ func (o *String) BinaryOp(op token.Token, rhs Object) (Object, error) {
 			}
 			return FalseValue, nil
 		}
-	case token.GreaterEq:
+	case parser.TokenGreaterEq:
 		switch rhs := rhs.(type) {
 		case *String:
 			if o.Value >= rhs.Value {
@@ -1260,16 +1259,16 @@ func (o *Time) TypeName() string {
 
 // BinaryOp returns another object that is the result of a given binary
 // operator and a right-hand side object.
-func (o *Time) BinaryOp(op token.Token, rhs Object) (Object, error) {
+func (o *Time) BinaryOp(op parser.Token, rhs Object) (Object, error) {
 	switch rhs := rhs.(type) {
 	case *Int:
 		switch op {
-		case token.Add: // time + int => time
+		case parser.TokenAdd: // time + int => time
 			if rhs.Value == 0 {
 				return o, nil
 			}
 			return &Time{Value: o.Value.Add(time.Duration(rhs.Value))}, nil
-		case token.Sub: // time - int => time
+		case parser.TokenSub: // time - int => time
 			if rhs.Value == 0 {
 				return o, nil
 			}
@@ -1277,24 +1276,24 @@ func (o *Time) BinaryOp(op token.Token, rhs Object) (Object, error) {
 		}
 	case *Time:
 		switch op {
-		case token.Sub: // time - time => int (duration)
+		case parser.TokenSub: // time - time => int (duration)
 			return &Int{Value: int64(o.Value.Sub(rhs.Value))}, nil
-		case token.Less: // time < time => bool
+		case parser.TokenLess: // time < time => bool
 			if o.Value.Before(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.Greater:
+		case parser.TokenGreater:
 			if o.Value.After(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.LessEq:
+		case parser.TokenLessEq:
 			if o.Value.Equal(rhs.Value) || o.Value.Before(rhs.Value) {
 				return TrueValue, nil
 			}
 			return FalseValue, nil
-		case token.GreaterEq:
+		case parser.TokenGreaterEq:
 			if o.Value.Equal(rhs.Value) || o.Value.After(rhs.Value) {
 				return TrueValue, nil
 			}

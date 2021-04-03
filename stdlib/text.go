@@ -2,6 +2,8 @@ package stdlib
 
 import (
 	"fmt"
+	"html"
+	"bytes"
 	"regexp"
 	"strconv"
 	"strings"
@@ -199,6 +201,26 @@ var textModule = map[string]gslang.Object{
 		Name:  "unquote",
 		Value: FuncASRSE(strconv.Unquote),
 	}, // unquote(str) => string/error
+	"len": &gslang.UserFunction{
+		Name:  "len",
+		Value: textLen,
+	}, // len(str) => int
+	"addslashes": &gslang.UserFunction{
+		Name:  "addslashes",
+		Value: textAddslashes,
+	}, // addslashes(s) => string
+	"stripslashes": &gslang.UserFunction{
+		Name:  "stripslashes",
+		Value: textStripslashes,
+	}, // stripslashes(s) => string
+	"escape_str": &gslang.UserFunction{
+		Name:  "escape_str",
+		Value: FuncASRS(html.EscapeString),
+	}, // escape_str(s) => string
+	"unescape_str": &gslang.UserFunction{
+		Name:  "unescape_str",
+		Value: FuncASRS(html.UnescapeString),
+	}, // unescape_str(s) => string
 }
 
 func textREMatch(args ...gslang.Object) (ret gslang.Object, err error) {
@@ -1006,6 +1028,87 @@ func textParseInt(args ...gslang.Object) (ret gslang.Object, err error) {
 
 	ret = &gslang.Int{Value: parsed}
 
+	return
+}
+
+func textLen(args ...gslang.Object) (ret gslang.Object, err error) {
+	if len(args) != 1 {
+		err = gslang.ErrWrongNumArguments
+		return
+	}
+
+	s1, ok := gslang.ToString(args[0])
+	if !ok {
+		err = gslang.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "string(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+	ret = &gslang.Int{Value: int64(utf8.RuneCountInString(s1))}
+	return
+}
+
+func textAddslashes(args ...gslang.Object) (ret gslang.Object, err error) {
+	if len(args) != 1 {
+		err = gslang.ErrWrongNumArguments
+		return
+	}
+
+	s1, ok := gslang.ToString(args[0])
+	if !ok {
+		err = gslang.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "string(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+
+	var buf bytes.Buffer
+	for _, c := range s1 {
+		switch c {
+		case '\'', '"', '\\':
+			buf.WriteRune('\\')
+		}
+		buf.WriteRune(c)
+	}
+	ret = &gslang.String{Value: buf.String()}
+	return
+}
+
+func textStripslashes(args ...gslang.Object) (ret gslang.Object, err error) {
+	if len(args) != 1 {
+		err = gslang.ErrWrongNumArguments
+		return
+	}
+
+	s1, ok := gslang.ToString(args[0])
+	if !ok {
+		err = gslang.ErrInvalidArgumentType{
+			Name:     "first",
+			Expected: "string(compatible)",
+			Found:    args[0].TypeName(),
+		}
+		return
+	}
+
+	var buf bytes.Buffer
+	l, skip := len(s1), false
+	for i, c := range s1 {
+		if skip {
+			skip = false
+		} else if c == '\\' {
+			if i+1 < l && s1[i+1] == '\\' {
+				skip = true
+			}
+			continue
+		}
+		buf.WriteRune(c)
+	}
+	
+	ret = &gslang.String{Value: buf.String()}
 	return
 }
 

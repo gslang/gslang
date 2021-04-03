@@ -2,7 +2,6 @@ package stdlib
 
 import (
 	"math/rand"
-
 	"github.com/gslang/gslang"
 )
 
